@@ -1,0 +1,14 @@
+<Component name="PersonAgentNode">
+  <ModalDialog id="paHelp" title="Alice's Agent">
+    <Text>A software agent that acts on behalf of the person to negotiate and record agreements.</Text>
+  </ModalDialog>
+  <VStack gap="$space-1" padding="$space-2">
+    <HStack verticalAlignment="center">
+      <Text fontWeight="bold">Alice's Agent</Text>
+      <SpaceFiller />
+      <Icon name="info" tooltip="Help" width="14px" height="14px" color="$color-surface-500" cursor="pointer" onClick="paHelp.open()" />
+    </HStack>
+    <Text fontSize="$fontSize-small" color="$textColor-secondary" when="{offeredTerm === ''}">Waiting for term...</Text>
+    <Text fontSize="$fontSize-small" fontWeight="bold" color="$color-primary" when="{offeredTerm !== ''}">Received: {offeredTerm}</Text>
+  </VStack>
+</Component>

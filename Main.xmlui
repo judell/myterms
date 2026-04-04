@@ -1,0 +1,24 @@
+<App layout="vertical-sticky" name="MyTerms"
+  global.offeredTerm="{''}"
+  global.agreementDecision="{''}"
+  global.agreementCount="{0}"
+  global.acceptedCount="{0}"
+  global.aliceDataStore="{[]}"
+  global.kleindorfersDataStore="{[]}"
+  global.kleindorfersTerms="{[{terms:'SD-BASE',policy:'Accept'},{terms:'PDC-AI',policy:'Reject'}]}"
+>
+  <AppHeader>
+    <Text fontWeight="bold">MyTerms</Text>
+    <SpaceFiller />
+    <Button label="Reset" size="small" variant="outlined" onClick="{() => { localStorage.removeItem('reactflow-canvas'); offeredTerm = ''; agreementDecision = ''; location.reload() }}" />
+    <ToneSwitch />
+    <Inspector />
+  </AppHeader>
+
+  <Pages>
+    <Page url="/">
+      <ReactFlowPage />
+    </Page>
+  </Pages>
+
+</App>

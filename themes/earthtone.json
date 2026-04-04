@@ -1,0 +1,11 @@
+{
+  "name": "Earthtone",
+  "id": "earthtone",
+  "themeVars": {
+    "color-primary": "hsl(30, 50%, 30%)",
+    "color-secondary": "hsl(120, 40%, 25%)",
+    "color-surface": "hsl(39, 43%, 97%)",
+    "paddingTop-ExpandableItem": "0",
+    "paddingBottom-ExpandableItem": "0"
+  }
+}

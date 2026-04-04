@@ -1,0 +1,11 @@
+{
+  "appGlobals": {
+    "xsVerbose": true,
+    "xsVerboseLogMax": 500
+  },
+  "themes": ["themes/earthtone.json"],
+  "resources": {
+    "icon.message-circle-question": "icons/message-circle-question.svg",
+    "icon.info": "icons/info.svg"
+  }
+}

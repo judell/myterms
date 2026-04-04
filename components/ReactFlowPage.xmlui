@@ -1,0 +1,94 @@
+<Component name="ReactFlowPage" var.edgeLabel="" var.edgeId="">
+  <ModalDialog id="edgeInfoDialog" title="{edgeLabel}">
+    <VStack gap="$space-2">
+      <Text>Relationship: {edgeLabel}</Text>
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">Edge ID: {edgeId}</Text>
+    </VStack>
+  </ModalDialog>
+
+  <ModalDialog id="sdBaseInfo" title="SD-BASE">
+    <Markdown>
+      <![CDATA[
+The base level 'service delivery relationship' agreement is a very important piece of the MyTerms story. It is the base/default relationship agreement that should be in place for any individual using an agent to propose a MyTerms agreement to an organisation.
+      ]]>
+    </Markdown>
+  </ModalDialog>
+
+  <ModalDialog id="pdcAiInfo" title="PDC-AI">
+    <Markdown>
+      <![CDATA[
+An agreement that indicates you are willing to provide access to specific data under your control for the purposes of Training and Operating AI technologies.
+      ]]>
+    </Markdown>
+  </ModalDialog>
+
+  <ModalDialog id="agreementsDialog" title="Possible MyTerms Agreements">
+    <VStack gap="$space-2">
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">Public Website</Text>
+      <HStack verticalAlignment="center" gap="$space-1">
+        <Text>SD-BASE</Text>
+        <Icon name="info" tooltip="SD-BASE details" width="14px" height="14px" color="$color-primary" cursor="pointer" onClick="sdBaseInfo.open()" />
+      </HStack>
+      <HStack verticalAlignment="center" gap="$space-1">
+        <Text>PDC-AI</Text>
+        <Icon name="info" tooltip="PDC-AI details" width="14px" height="14px" color="$color-primary" cursor="pointer" onClick="pdcAiInfo.open()" />
+      </HStack>
+    </VStack>
+  </ModalDialog>
+
+  <ModalDialog id="auditTrailDialog" title="Audit Trail">
+    <VStack gap="$space-2">
+      <Text fontWeight="bold">Signed Agreement: {offeredTerm}</Text>
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">Both parties have signed. Identical copies stored:</Text>
+      <HStack gap="$space-2">
+        <VStack gap="$space-1">
+          <Text fontWeight="bold" fontSize="$fontSize-small">Alice</Text>
+          <Text fontSize="$fontSize-small">Stored in personal data store</Text>
+          <Text fontSize="$fontSize-small" color="$color-success">Verified</Text>
+        </VStack>
+        <VStack gap="$space-1">
+          <Text fontWeight="bold" fontSize="$fontSize-small">Kleindorfers</Text>
+          <Text fontSize="$fontSize-small">Stored in entity data store</Text>
+          <Text fontSize="$fontSize-small" color="$color-success">Verified</Text>
+        </VStack>
+      </HStack>
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">Public record available on Public Website</Text>
+    </VStack>
+  </ModalDialog>
+
+  <ChangeListener listenTo="{offeredTerm}" onDidChange="{() => { if (offeredTerm !== '') { const match = kleindorfersTerms.find(function(t) { return t.terms === offeredTerm }); agreementDecision = (match && match.policy === 'Accept') ? 'yes' : 'no'; agreementCount = agreementCount + 1 } }}" />
+
+  <ChangeListener listenTo="{agreementCount}" onDidChange="{() => { if (agreementDecision !== '') { kleindorfersTerms = kleindorfersTerms.map(function(t) { return t.terms === offeredTerm ? { terms: t.terms, policy: agreementDecision === 'yes' ? 'Accept' : 'Reject' } : t }); aliceDataStore = [...aliceDataStore, makeStoreEntry(offeredTerm + ' (' + (agreementDecision === 'yes' ? 'accepted' : 'rejected') + ')', 'Kleindorfers')]; kleindorfersDataStore = [...kleindorfersDataStore, makeStoreEntry(offeredTerm + ' (' + (agreementDecision === 'yes' ? 'accepted' : 'rejected') + ')', 'Alice')]; if (agreementDecision === 'yes') { acceptedCount = acceptedCount + 1; canvas.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true) } } }}" />
+
+  <Stack height="calc(100vh - 48px)" width="100%">
+    <ReactFlowCanvas id="canvas"
+      fitView="{true}"
+      snapToGrid="{true}"
+      showMinimap="{false}"
+      showControls="{true}"
+      showBackground="{true}"
+      storageKey="contract-flow"
+      onEdgeInfoClick="{(e) => { if (e.edgeId === 'e-pa-ea') { agreementsDialog.open() } else if (e.edgeId === 'e-signed') { auditTrailDialog.open() } else { edgeLabel = e.label; edgeId = e.edgeId; edgeInfoDialog.open() } }}"
+      nodes="{[
+        { id: 'person',       position: { x: personX,      y: 150 }, data: { label: 'Alice', magnetY: '12%', _v: '' + agreementCount + offeredTerm + aliceDataStore.length },              width: 300, height: 380 },
+        { id: 'person-agent', position: { x: personAgentX, y: 150 }, data: { label: 'Alices Agent', _v: '' + agreementCount + offeredTerm },       width: 300, height: 200 },
+        { id: 'agreements',   position: { x: 520, y: -200 }, data: { label: 'Agreements', _v: '' + offeredTerm }, width: 350, height: 450 },
+        { id: 'entity-agent', position: { x: entityAgentX, y: 150 }, data: { label: 'Kleindorfers Agent', magnetY: '22%', _v: '' + agreementCount + offeredTerm + agreementDecision }, width: 300, height: 200 },
+        { id: 'entity',       position: { x: 1300, y: 150 }, data: { label: 'Kleindorfers', _v: '' + agreementCount + kleindorfersDataStore.length },       width: 300, height: 400 }
+      ]}"
+      edges="{[
+        { id: 'e-p-pa', source: 'person',       target: 'person-agent', sourceHandle: 'bottom', targetHandle: 'top', data: { label: 'delegates personal agency' } },
+        { id: 'e-pa-ag', source: 'person-agent', target: 'agreements', sourceHandle: 'top', targetHandle: 'bottom', data: { label: 'proffers' } },
+        { id: 'e-ag-ea', source: 'agreements', target: 'entity-agent', sourceHandle: 'right-lower', targetHandle: 'left-lower', data: { label: 'evaluates' } },
+        { id: 'e-ea-e', source: 'entity',  target: 'entity-agent',       sourceHandle: 'right-upper', targetHandle: 'right-upper', data: { label: 'delegates to' } },
+        { id: 'e-ea-verify', source: 'entity-agent', target: 'entity',  sourceHandle: 'bottom', targetHandle: 'top', data: { label: 'verifies agreement' } }
+      ]}"
+    >
+      <PersonNode />
+      <PersonAgentNode />
+      <AgreementsPanel />
+      <EntityAgentNode />
+      <EntityNode />
+    </ReactFlowCanvas>
+  </Stack>
+</Component>

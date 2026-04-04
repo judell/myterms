@@ -1,0 +1,19 @@
+<Component name="EntityAgentNode">
+  <ModalDialog id="eaHelp" title="Kleindorfers Agent">
+    <Text>A software agent that acts on behalf of the entity to negotiate and record agreements.</Text>
+  </ModalDialog>
+  <ModalDialog id="eaMagnet" title="Kleindorfers Agent Terms">
+    <Text>This magnet represents the entity agent acceptance criteria. When attracted, it confirms the entity willingness to bind to the offered terms.</Text>
+  </ModalDialog>
+  <VStack gap="$space-1" padding="$space-2">
+    <HStack verticalAlignment="center">
+      <Text fontSize="2rem" color="$color-primary" cursor="pointer" onClick="eaMagnet.open()">⊃</Text>
+      <Text fontWeight="bold" fontSize="$fontSize-small">Kleindorfers Agent</Text>
+      <SpaceFiller />
+      <Icon name="info" tooltip="Help" width="14px" height="14px" color="$color-surface-500" cursor="pointer" onClick="eaHelp.open()" />
+    </HStack>
+    <Text fontSize="$fontSize-small" color="$textColor-secondary" when="{offeredTerm === ''}">No term offered yet</Text>
+    <Text fontSize="$fontSize-small" fontWeight="bold" color="$color-success" when="{offeredTerm !== '' && lookupTermPolicy(offeredTerm) === 'Accept'}">Accepted: {offeredTerm}</Text>
+    <Text fontSize="$fontSize-small" fontWeight="bold" color="$color-danger" when="{offeredTerm !== '' && lookupTermPolicy(offeredTerm) === 'Reject'}">Rejected: {offeredTerm}</Text>
+  </VStack>
+</Component>
