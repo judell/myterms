@@ -1,10 +1,16 @@
 # Animating a Network with ARIA Labels
 
-**Repo:** https://github.com/judell/myterms
+## Live demo
 
-**Animation:** https://judell.github.io/myterms/ARIA-Animation.html
+https://judell.github.io/myterms/
 
-**Live demo:** https://judell.github.io/myterms/
+## Repo
+
+https://github.com/judell/myterms
+
+## Animation
+
+https://judell.github.io/myterms/ARIA-Animation.html
 
 ## The question
 
