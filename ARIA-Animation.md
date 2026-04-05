@@ -100,7 +100,9 @@ The DOM animation worked. But choreographing the network, making nodes react whe
 
 The original pulse API used `setTimeout` to step through edges and emit events. The XMLUI framework has its own reactive system: globals, ChangeListeners, and expressions that re-evaluate when dependencies change. Setting a global like `pulseCurrentEdge = 'evaluates'` from inside a `setTimeout` callback didn't trigger XMLUI's reactive updates. The event fired, the callback executed, but the ChangeListener never saw the change.
 
-The diagnostic was revealing. XMLUI's built-in `edgeInfoClick` handler worked fine because it fired synchronously from a user click. The pulse events fired asynchronously from `setTimeout`, outside the reactive transaction context.
+The diagnostic was revealing. XMLUI's semantic tracing ([full trace](xs-trace-diagnostic.json)) showed that the `onPulseStep` callback was being called for all five edges — the console confirmed the function existed and returned normally. But the ChangeListener on `pulseCurrentEdge` never fired for "evaluates" or "verifies agreement". Three edges worked, two didn't. The differentiating factor: the three that worked triggered no state changes, while the two that failed were the ones whose ChangeListener conditions matched and tried to set globals.
+
+XMLUI's built-in `edgeInfoClick` handler worked fine because it fired synchronously from a user click. The pulse events fired asynchronously from `setTimeout`, outside the reactive transaction context.
 
 The fix was to use XMLUI's own `Timer` component instead of `setTimeout`. Timer integrates with the reactive system the same way any other XMLUI component does. Its `onTick` handler runs inside the framework's event processing, so global assignments properly trigger ChangeListeners.
 
