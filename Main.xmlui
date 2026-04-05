@@ -6,10 +6,7 @@
   global.aliceDataStore="{[]}"
   global.kleindorfersDataStore="{[]}"
   global.kleindorfersTerms="{[{terms:'SD-BASE',policy:'Accept'},{terms:'PDC-AI',policy:'Reject'}]}"
-  global.pulseCurrentEdge="{''}"
-  global.pulseEdges="{[]}"
-  global.pulseStep="{-1}"
-  global.pulseActive="{false}"
+  global.pulse="{{ active: false, edges: [], step: -1, currentEdge: '' }}"
 >
   <DataSource
     id="readmeData"
