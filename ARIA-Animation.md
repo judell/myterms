@@ -10,7 +10,7 @@ https://github.com/judell/myterms
 
 ## Animation
 
-https://judell.github.io/myterms/ARIA-Animation.html
+https://github.com/judell/myterms/blob/main/ARIA-Animation.md
 
 ## The question
 
