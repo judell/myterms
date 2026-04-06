@@ -42,51 +42,6 @@ function onPulseEdgeChange(change) {
         ? "yes"
         : "no";
   }
-  if (change.newValue === "verifies agreement" && agreementDecision !== "") {
-    kleindorfersTerms = kleindorfersTerms.map(function (t) {
-      return t.terms === offeredTerm
-        ? {
-            terms: t.terms,
-            policy: agreementDecision === "yes" ? "Accept" : "Reject",
-          }
-        : t;
-    });
-    aliceDataStore = [
-      ...aliceDataStore,
-      makeStoreEntry(
-        offeredTerm +
-          " (" +
-          (agreementDecision === "yes" ? "accepted" : "rejected") +
-          ")",
-        "Kleindorfer's",
-      ),
-    ];
-    kleindorfersDataStore = [
-      ...kleindorfersDataStore,
-      makeStoreEntry(
-        offeredTerm +
-          " (" +
-          (agreementDecision === "yes" ? "accepted" : "rejected") +
-          ")",
-        "Alice",
-      ),
-    ];
-    if (agreementDecision === "yes") {
-      acceptedCount = acceptedCount + 1;
-      canvas.addEdge(
-        "e-signed-" + acceptedCount,
-        "person",
-        "entity-agent",
-        "right-magnet",
-        "left-magnet",
-        "signed: " + offeredTerm + " \u2282\u2283",
-        true,
-      );
-    }
-    phase = 0;
-    phaseLabel = '1';
-    phaseMessage = "Alice and Kleindorfer's delegate agency"
-  }
 }
 
 function delegate() {
@@ -100,8 +55,8 @@ function delegate() {
     { terms: "PDC-AI", policy: "Reject" },
   ];
   window.__reactFlowCanvasApi.clearPulse();
-  window.__reactFlowCanvasApi.pulseEdge("delegates agency", 1800);
-  window.__reactFlowCanvasApi.pulseEdge("delegates personal agency", 1800);
+  window.__reactFlowCanvasApi.pulseEdge("delegates agency", pulseDuration);
+  window.__reactFlowCanvasApi.pulseEdge("delegates personal agency", pulseDuration);
   phase = "delegating";
 }
 
@@ -109,21 +64,108 @@ function getTerms() {
   phase = 2;
   phaseLabel = '2';
   phaseMessage = 'Alice looks up terms';
-  pulse = { active: true, edges: ["lookup terms", "provide terms"], step: 0, currentEdge: "" };
+  const api = window.__reactFlowCanvasApi;
+  api.addEdge('e-p-ag', 'person', 'agreements', 'right-top', 'left-top', 'lookup terms');
+  api.pulseEdgeRoundTrip('lookup terms', pulseDuration);
+  roundTrip = 'lookup terms';
+}
+
+function sendTerm() {
+  phase = 'sending';
+  phaseLabel = '3';
+  phaseMessage = 'Alice sends term to agent';
+  const api = window.__reactFlowCanvasApi;
+  api.addEdge('e-p-pa-send', 'person', 'person-agent', 'bottom-right', 'top-right', 'send', false, { labelPosition: 60 });
+  pulse = { active: true, edges: ['send'], step: 0, currentEdge: 'lookup terms' };
+}
+
+function cleanupSendEdge() {
+  window.__reactFlowCanvasApi.removeEdge('e-p-pa-send');
 }
 
 function proffer() {
   phase = 5;
   phaseLabel = '5';
   phaseMessage = 'Proffering agreement';
-  pulse = { active: true, edges: ['proffers'], step: 0, currentEdge: 'provide terms' };
+  pulse = { active: true, edges: ['proffers'], step: 0, currentEdge: 'lookup terms' };
 }
 
 function applyPolicy() {
   phase = 7;
   phaseLabel = '7';
-  phaseMessage = 'Applying policy';
-  pulse = { active: true, edges: ['verifies agreement'], step: 0, currentEdge: 'proffers' };
+  phaseMessage = 'Consulting policy';
+  const api = window.__reactFlowCanvasApi;
+  api.addEdge('e-ea-consult', 'entity-agent', 'entity', 'bottom-left', 'top-left', 'consults policy');
+  api.pulseEdgeRoundTrip('consults policy', pulseDuration);
+  roundTrip = 'consults policy';
+}
+
+function onRoundTripComplete() {
+  if (roundTrip === 'lookup terms') {
+    window.__reactFlowCanvasApi.removeEdge('e-p-ag');
+    phase = 3;
+    phaseLabel = '3';
+    phaseMessage = "Choose a term from Alice's list";
+  }
+  if (roundTrip === 'consults policy') {
+    window.__reactFlowCanvasApi.removeEdge('e-ea-consult');
+    if (agreementDecision === 'yes') {
+      phase = 8;
+      phaseLabel = '8';
+      phaseMessage = "Kleindorfer's agent verifies agreement";
+    } else {
+      phase = 10;
+      phaseLabel = '';
+      phaseMessage = 'Agreement rejected';
+    }
+  }
+  if (roundTrip === 'verifies agreement') {
+    window.__reactFlowCanvasApi.removeEdge('e-ea-verify');
+    kleindorfersTerms = kleindorfersTerms.map(function(t) {
+      return t.terms === offeredTerm ? { terms: t.terms, policy: agreementDecision === 'yes' ? 'Accept' : 'Reject' } : t;
+    });
+    aliceDataStore = [...aliceDataStore, makeStoreEntry(offeredTerm + ' (' + (agreementDecision === 'yes' ? 'accepted' : 'rejected') + ')', "Kleindorfer's")];
+    kleindorfersDataStore = [...kleindorfersDataStore, makeStoreEntry(offeredTerm + ' (' + (agreementDecision === 'yes' ? 'accepted' : 'rejected') + ')', 'Alice')];
+    if (agreementDecision === 'yes') {
+      acceptedCount = acceptedCount + 1;
+      window.__reactFlowCanvasApi.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true);
+    }
+    phase = 10;
+    phaseLabel = '';
+    phaseMessage = agreementDecision === 'yes' ? 'Agreement signed and posted to ledger' : 'Agreement rejected';
+  }
+  roundTrip = '';
+}
+
+function agree() {
+  phase = 9;
+  phaseLabel = '9';
+  phaseMessage = 'Verifying agreement';
+  const api = window.__reactFlowCanvasApi;
+  api.addEdge('e-ea-verify', 'entity-agent', 'entity', 'bottom-left', 'top-left', 'verifies agreement', false, { labelPosition: 30 });
+  api.pulseEdge('verifies agreement', pulseDuration * 2);
+  roundTrip = 'verifies agreement';
+}
+
+function startOver() {
+  const api = window.__reactFlowCanvasApi;
+  // Remove all signed edges
+  for (let i = 1; i <= acceptedCount; i++) {
+    api.removeEdge('e-signed-' + i);
+  }
+  offeredTerm = '';
+  agreementDecision = '';
+  acceptedCount = 0;
+  aliceDataStore = [];
+  kleindorfersDataStore = [];
+  kleindorfersTerms = [
+    { terms: 'SD-BASE', policy: 'Accept' },
+    { terms: 'PDC-AI', policy: 'Reject' },
+  ];
+  api.clearPulse();
+  phase = 0;
+  phaseLabel = '1';
+  phaseMessage = "Alice and Kleindorfer's delegate agency";
 }
 
 function saveLayout() {
@@ -162,52 +204,28 @@ function getNodes() {
 function getEdges() {
   return [
     {
-      id: "e-p-ag",
-      source: "person",
-      target: "agreements",
-      sourceHandle: "right-upper",
-      targetHandle: "left-upper",
-      data: { label: "lookup terms" },
-    },
-    {
-      id: "e-ag-p",
-      source: "agreements",
-      target: "person",
-      sourceHandle: "left-lower",
-      targetHandle: "right-lower",
-      data: { label: "provide terms" },
-    },
-    {
       id: "e-p-pa",
       source: "person",
       target: "person-agent",
-      sourceHandle: "bottom",
-      targetHandle: "top",
-      data: { label: "delegates personal agency" },
+      sourceHandle: "bottom-left",
+      targetHandle: "top-left",
+      data: { label: "delegates personal agency", labelPosition: 40 },
     },
     {
       id: "e-pa-ea",
       source: "person-agent",
       target: "entity-agent",
-      sourceHandle: "right-upper",
-      targetHandle: "left-lower",
+      sourceHandle: "right-top",
+      targetHandle: "left-bottom",
       data: { label: "proffers" },
     },
     {
       id: "e-ea-e",
       source: "entity",
       target: "entity-agent",
-      sourceHandle: "top",
-      targetHandle: "bottom",
-      data: { label: "delegates agency" },
-    },
-    {
-      id: "e-ea-verify",
-      source: "entity-agent",
-      target: "entity",
-      sourceHandle: "right-upper",
-      targetHandle: "right-upper",
-      data: { label: "verifies agreement" },
+      sourceHandle: "top-right",
+      targetHandle: "bottom-right",
+      data: { label: "delegates agency", labelPosition: 30 },
     },
   ];
 }

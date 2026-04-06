@@ -105,16 +105,16 @@ An agreement that indicates you are willing to provide access to specific data u
 
   <ChangeListener
     listenTo="{pulse.active}"
-    onDidChange="{() => { if (!pulse.active && phase === 2) { phase = 3; phaseLabel = '3'; phaseMessage = 'Choose a term from Alice\u0027s list' } if (!pulse.active && phase === 5) { phase = 6; phaseLabel = '6'; phaseMessage = 'Kleindorfer\u0027s agent applies policy' } }}" />
+    onDidChange="{() => { if (!pulse.active && phase === 'sending') { cleanupSendEdge(); phase = 4; phaseLabel = '4'; phaseMessage = 'Alice\u0027s agent proffers agreement' } if (!pulse.active && phase === 5) { phase = 6; phaseLabel = '6'; phaseMessage = 'Kleindorfer\u0027s agent consults policy' } }}" />
 
   <ChangeListener
     listenTo="{offeredTerm}"
-    onDidChange="{() => { if (offeredTerm !== '') { phase = 4; phaseLabel = '4'; phaseMessage = 'Alice proffers agreement' } }}" />
+    onDidChange="{() => { if (offeredTerm !== '') { sendTerm() } }}" />
 
   <Timer
     enabled="{pulse.active}"
-    interval="{1800}"
-    onTick="{() => { if (pulse.step < pulse.edges.length) { canvas.pulseEdge(pulse.edges[pulse.step], 1800); pulse = { active: true, edges: pulse.edges, step: pulse.step + 1, currentEdge: pulse.edges[pulse.step] } } else { canvas.clearPulse(); pulse = { active: false, edges: pulse.edges, step: pulse.step, currentEdge: pulse.currentEdge } } }}" />
+    interval="{pulseDuration}"
+    onTick="{() => { if (pulse.step < pulse.edges.length) { canvas.pulseEdge(pulse.edges[pulse.step], pulseDuration); pulse = { active: true, edges: pulse.edges, step: pulse.step + 1, currentEdge: pulse.edges[pulse.step] } } else { canvas.clearPulse(); pulse = { active: false, edges: pulse.edges, step: pulse.step, currentEdge: pulse.currentEdge } } }}" />
 
   <ChangeListener
     listenTo="{pulse.currentEdge}"
@@ -122,8 +122,13 @@ An agreement that indicates you are willing to provide access to specific data u
 
   <Timer
     enabled="{phase === 'delegating'}"
-    interval="{1800}"
+    interval="{pulseDuration}"
     onTick="{() => { phase = 1; phaseLabel = '2'; phaseMessage = 'Alice looks up terms' }}" />
+
+  <Timer
+    enabled="{roundTrip !== ''}"
+    interval="{pulseDuration * 2}"
+    onTick="{() => onRoundTripComplete()}" />
 
   <Stack
     height="calc(100vh - 48px)"

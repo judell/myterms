@@ -12,7 +12,15 @@
     when="{phase === 4}"
     onClick="proffer()" />
   <Button
-    label="Apply Policy"
+    label="Consult Policy"
     when="{phase === 6}"
     onClick="applyPolicy()" />
+  <Button
+    label="Verify"
+    when="{phase === 8}"
+    onClick="agree()" />
+  <Button
+    label="Start Over"
+    when="{phase === 10}"
+    onClick="startOver()" />
 </Component>

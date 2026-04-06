@@ -13,14 +13,14 @@
     <Text
       fontSize="$fontSize-small"
       color="$textColor-secondary"
-      when="{offeredTerm === '' || pulseNotReached('delegates personal agency')}">
+      when="{phase < 4}">
       Waiting for term...
     </Text>
     <Text
       fontSize="$fontSize-small"
       fontWeight="bold"
       color="$color-primary"
-      when="{offeredTerm !== '' && pulseReached('delegates personal agency')}">
+      when="{phase >= 3 && offeredTerm !== ''}">
       Received: {offeredTerm}
     </Text>
   </VStack>
