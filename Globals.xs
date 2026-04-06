@@ -65,9 +65,9 @@ function getTerms() {
   phaseLabel = '2';
   phaseMessage = 'Alice looks up terms';
   const api = window.__reactFlowCanvasApi;
-  api.addEdge('e-p-ag', 'person', 'agreements', 'right-top', 'left-top', 'lookup terms');
-  api.pulseEdgeRoundTrip('lookup terms', pulseDuration);
-  roundTrip = 'lookup terms';
+  api.addEdge('e-p-ag', 'person', 'agreements', 'right-top', 'left-top', 'lookup');
+  api.pulseEdgeRoundTrip('lookup', pulseDuration);
+  roundTrip = 'lookup';
 }
 
 function sendTerm() {
@@ -76,7 +76,7 @@ function sendTerm() {
   phaseMessage = 'Alice sends term to agent';
   const api = window.__reactFlowCanvasApi;
   api.addEdge('e-p-pa-send', 'person', 'person-agent', 'bottom-right', 'top-right', 'send', false, { labelPosition: 60 });
-  pulse = { active: true, edges: ['send'], step: 0, currentEdge: 'lookup terms' };
+  pulse = { active: true, edges: ['send'], step: 0, currentEdge: 'lookup' };
 }
 
 function cleanupSendEdge() {
@@ -87,7 +87,7 @@ function proffer() {
   phase = 5;
   phaseLabel = '5';
   phaseMessage = 'Proffering agreement';
-  pulse = { active: true, edges: ['proffers'], step: 0, currentEdge: 'lookup terms' };
+  pulse = { active: true, edges: ['proffers'], step: 0, currentEdge: 'lookup' };
 }
 
 function applyPolicy() {
@@ -101,7 +101,7 @@ function applyPolicy() {
 }
 
 function onRoundTripComplete() {
-  if (roundTrip === 'lookup terms') {
+  if (roundTrip === 'lookup') {
     window.__reactFlowCanvasApi.removeEdge('e-p-ag');
     phase = 3;
     phaseLabel = '3';

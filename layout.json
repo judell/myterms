@@ -3,18 +3,18 @@
     "person": {
       "x": -128,
       "y": -368,
-      "width": 300,
-      "height": 380
+      "width": 268,
+      "height": 300
     },
     "person-agent": {
-      "x": 304,
+      "x": 320,
       "y": 336,
       "width": 300,
       "height": 200
     },
     "agreements": {
-      "x": 272,
-      "y": -272,
+      "x": 288,
+      "y": -288,
       "width": 350,
       "height": 402
     },
@@ -28,7 +28,7 @@
       "x": 816,
       "y": 160,
       "width": 300,
-      "height": 400
+      "height": 320
     },
     "control": {
       "x": 400,

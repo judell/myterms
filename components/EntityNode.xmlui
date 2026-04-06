@@ -12,7 +12,9 @@
     </HStack>
     <Table data="{kleindorfersTerms}" fontSize="$fontSize-small" height="100px">
       <Column bindTo="terms" header="Terms" />
-      <Column bindTo="policy" header="Policy" />
+      <Column header="Policy">
+        <Text>{$item.policy === 'Accept' ? '✅ Accept' : '❌ Reject'}</Text>
+      </Column>
     </Table>
     <Text
       fontSize="$fontSize-small"
