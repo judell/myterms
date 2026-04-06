@@ -104,8 +104,12 @@ An agreement that indicates you are willing to provide access to specific data u
     onLoaded="{(data) => { layout = data }}" />
 
   <ChangeListener
+    listenTo="{pulse.active}"
+    onDidChange="{() => { if (!pulse.active && phase === 2) { phase = 3; phaseLabel = '3'; phaseMessage = 'Choose a term from Alice\u0027s list' } if (!pulse.active && phase === 5) { phase = 6; phaseLabel = '6'; phaseMessage = 'Kleindorfer\u0027s agent applies policy' } }}" />
+
+  <ChangeListener
     listenTo="{offeredTerm}"
-    onDidChange="{() => { if (offeredTerm !== '') { phase = 3; phaseLabel = '3'; pulse = { active: true, edges: ['proffers', 'verifies agreement'], step: 0, currentEdge: 'lookup terms' } } }}" />
+    onDidChange="{() => { if (offeredTerm !== '') { phase = 4; phaseLabel = '4'; phaseMessage = 'Alice proffers agreement' } }}" />
 
   <Timer
     enabled="{pulse.active}"
@@ -119,7 +123,7 @@ An agreement that indicates you are willing to provide access to specific data u
   <Timer
     enabled="{phase === 'delegating'}"
     interval="{1800}"
-    onTick="{() => { phaseLabel = '2'; phaseMessage = 'Alice finds available terms'; getTerms() }}" />
+    onTick="{() => { phase = 1; phaseLabel = '2'; phaseMessage = 'Alice looks up terms' }}" />
 
   <Stack
     height="calc(100vh - 48px)"

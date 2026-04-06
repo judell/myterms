@@ -100,7 +100,7 @@ function delegate() {
     { terms: "PDC-AI", policy: "Reject" },
   ];
   window.__reactFlowCanvasApi.clearPulse();
-  window.__reactFlowCanvasApi.pulseEdge("delegates to", 1800);
+  window.__reactFlowCanvasApi.pulseEdge("delegates agency", 1800);
   window.__reactFlowCanvasApi.pulseEdge("delegates personal agency", 1800);
   phase = "delegating";
 }
@@ -108,8 +108,22 @@ function delegate() {
 function getTerms() {
   phase = 2;
   phaseLabel = '2';
-  phaseMessage = 'Alice finds available terms';
-  pulse = { active: true, edges: ["lookup terms"], step: 0, currentEdge: "" };
+  phaseMessage = 'Alice looks up terms';
+  pulse = { active: true, edges: ["lookup terms", "provide terms"], step: 0, currentEdge: "" };
+}
+
+function proffer() {
+  phase = 5;
+  phaseLabel = '5';
+  phaseMessage = 'Proffering agreement';
+  pulse = { active: true, edges: ['proffers'], step: 0, currentEdge: 'provide terms' };
+}
+
+function applyPolicy() {
+  phase = 7;
+  phaseLabel = '7';
+  phaseMessage = 'Applying policy';
+  pulse = { active: true, edges: ['verifies agreement'], step: 0, currentEdge: 'proffers' };
 }
 
 function saveLayout() {
@@ -156,6 +170,14 @@ function getEdges() {
       data: { label: "lookup terms" },
     },
     {
+      id: "e-ag-p",
+      source: "agreements",
+      target: "person",
+      sourceHandle: "left-lower",
+      targetHandle: "right-lower",
+      data: { label: "provide terms" },
+    },
+    {
       id: "e-p-pa",
       source: "person",
       target: "person-agent",
@@ -177,7 +199,7 @@ function getEdges() {
       target: "entity-agent",
       sourceHandle: "top",
       targetHandle: "bottom",
-      data: { label: "delegates to" },
+      data: { label: "delegates agency" },
     },
     {
       id: "e-ea-verify",

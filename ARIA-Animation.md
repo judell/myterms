@@ -122,11 +122,11 @@ pulse step 2
   canvas.pulseEdge("evaluates", 1200)
 
 pulse step 3
-  pulseCurrentEdge: "evaluates" → "delegates to"
-  canvas.pulseEdge("delegates to", 1200)
+  pulseCurrentEdge: "evaluates" → "delegates agency to"
+  canvas.pulseEdge("delegates agency to", 1200)
 
 pulse step 4
-  pulseCurrentEdge: "delegates to" → "verifies agreement"
+  pulseCurrentEdge: "delegates agency to" → "verifies agreement"
   aliceDataStore: [] → [SD-BASE (accepted)]            ← data stores update
   kleindorfersDataStore: [] → [SD-BASE (accepted)]
   acceptedCount: 0 → 1
@@ -188,13 +188,13 @@ Components use it to gate their displays:
 </Text>
 ```
 
-The temporal sequence is just an array of edge labels:
+The temporal sequence is just an array of edge labels:a
 
 ```javascript
 pulse.edges = [
   'delegates personal agency',
   'proffers',
-  'delegates to',
+  'delegates agency to',
   'evaluates',
   'verifies agreement'
 ]

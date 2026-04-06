@@ -26,7 +26,7 @@
     <Select
       placeholder="Choose a term..."
       onDidChange="{(val) => { offeredTerm = val }}"
-      when="{phase === 2 && !pulse.active}">
+      when="{pulseReached('provide terms')}">
       <Option value="SD-BASE" label="SD-BASE" />
       <Option value="PDC-AI" label="PDC-AI" />
     </Select>
