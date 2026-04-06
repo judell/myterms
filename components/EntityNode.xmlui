@@ -1,23 +1,41 @@
 <Component name="EntityNode">
-  <ModalDialog id="entityHelp" title="Kleindorfers">
-    <Text>An organization that presents terms and agrees to contract completion.</Text>
+  <ModalDialog id="entityHelp" title="Kleindorfer's">
+    <Text>
+      An organization that presents terms and agrees to contract completion.
+    </Text>
   </ModalDialog>
   <VStack gap="$space-1" padding="$space-2">
     <HStack verticalAlignment="center">
-      <Text fontWeight="bold">Kleindorfers</Text>
-      <SpaceFiller />
-      <Icon name="info" tooltip="Help" width="14px" height="14px" color="$color-surface-500" cursor="pointer" onClick="entityHelp.open()" />
+      <Text fontWeight="bold">
+        Kleindorfer's
+      </Text>
     </HStack>
     <Table data="{kleindorfersTerms}" fontSize="$fontSize-small" height="100px">
       <Column bindTo="terms" header="Terms" />
       <Column bindTo="policy" header="Policy" />
     </Table>
-    <Text fontSize="$fontSize-small" fontWeight="bold" when="{kleindorfersDataStore.length > 0 && pulseReached('verifies agreement')}">Data Store ({kleindorfersDataStore.length})</Text>
-    <Items data="{kleindorfersDataStore}" when="{pulseReached('verifies agreement')}">
+    <Text
+      fontSize="$fontSize-small"
+      fontWeight="bold"
+      when="{kleindorfersDataStore.length > 0 && pulseReached('verifies agreement')}">
+      Data Store ({kleindorfersDataStore.length})
+    </Text>
+    <Items
+      data="{kleindorfersDataStore}"
+      when="{pulseReached('verifies agreement')}">
       <VStack gap="0">
-        <Text fontSize="$fontSize-small" fontWeight="bold" color="{$item.term.indexOf('rejected') >= 0 ? '$color-error' : '$color-success'}">{$item.term.indexOf('rejected') >= 0 ? '✗' : '✓'} {$item.term} with {$item.counterparty}</Text>
-        <Text fontSize="$fontSize-small" color="$textColor-secondary">{$item.timestamp}</Text>
-        <Text fontSize="$fontSize-small" color="$textColor-secondary">{$item.country}</Text>
+        <Text
+          fontSize="$fontSize-small"
+          fontWeight="bold"
+          color="{$item.term.indexOf('rejected') >= 0 ? '$color-error' : '$color-success'}">
+          {$item.term.indexOf('rejected') >= 0 ? '✗' : '✓'} {$item.term} with {$item.counterparty}
+        </Text>
+        <Text fontSize="$fontSize-small" color="$textColor-secondary">
+          {$item.timestamp}
+        </Text>
+        <Text fontSize="$fontSize-small" color="$textColor-secondary">
+          {$item.country}
+        </Text>
       </VStack>
     </Items>
   </VStack>
