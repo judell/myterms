@@ -1,0 +1,10 @@
+<Component name="ControlNode">
+  <Button
+    label="Delegate"
+    when="{phase === 0}"
+    onClick="delegate()" />
+  <Button
+    label="Start"
+    when="{phase === 1 && !pulse.active}"
+    onClick="start()" />
+</Component>

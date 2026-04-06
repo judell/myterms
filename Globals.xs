@@ -84,6 +84,7 @@ function onPulseEdgeChange(change) {
       );
     }
     phase = 0;
+    phaseLabel = '1';
   }
 }
 
@@ -105,6 +106,7 @@ function delegate() {
 
 function start() {
   phase = 2;
+  phaseLabel = '2';
   pulse = { active: true, edges: ["lookup terms"], step: 0, currentEdge: "" };
 }
 
@@ -121,17 +123,7 @@ function saveLayout() {
 
 function makeNode(id, label, extra) {
   const n = layout.nodes[id];
-  const _v = '' +
-    phase +
-    pulse.active +
-    pulse.currentEdge +
-    offeredTerm +
-    agreementDecision +
-    agreementCount +
-    acceptedCount +
-    aliceDataStore.length +
-    kleindorfersDataStore.length;
-  const data = { label: label, _v: _v };
+  const data = { label: label };
   if (extra) {
     for (const k in extra) {
       data[k] = extra[k];
@@ -147,7 +139,7 @@ function getNodes() {
     makeNode("agreements", "Agreements"),
     makeNode("entity-agent", "Kleindorfer's Agent", { magnetY: "22%" }),
     makeNode("entity", "Kleindorfer's"),
-    makeNode("control", "Control", { chrome: true }),
+    makeNode("control", "Control", { chrome: false }),
   ];
 }
 

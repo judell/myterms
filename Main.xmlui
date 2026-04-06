@@ -9,6 +9,7 @@
   global.kleindorfersDataStore="{[]}"
   global.kleindorfersTerms="{[{terms:'SD-BASE',policy:'Accept'},{terms:'PDC-AI',policy:'Reject'}]}"
   global.phase="{0}"
+  global.phaseLabel="{'1'}"
   global.pulse="{{ active: false, edges: [], step: -1, currentEdge: '' }}">
   <DataSource
     id="readmeData"
