@@ -85,6 +85,7 @@ function onPulseEdgeChange(change) {
     }
     phase = 0;
     phaseLabel = '1';
+    phaseMessage = "Alice and Kleindorfer's delegate agency"
   }
 }
 
@@ -104,9 +105,10 @@ function delegate() {
   phase = "delegating";
 }
 
-function start() {
+function getTerms() {
   phase = 2;
   phaseLabel = '2';
+  phaseMessage = 'Alice finds available terms';
   pulse = { active: true, edges: ["lookup terms"], step: 0, currentEdge: "" };
 }
 

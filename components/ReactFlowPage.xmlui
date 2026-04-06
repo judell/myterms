@@ -119,7 +119,7 @@ An agreement that indicates you are willing to provide access to specific data u
   <Timer
     enabled="{phase === 'delegating'}"
     interval="{1800}"
-    onTick="{() => { phase = 1; phaseLabel = '2' }}" />
+    onTick="{() => { phaseLabel = '2'; phaseMessage = 'Alice finds available terms'; getTerms() }}" />
 
   <Stack
     height="calc(100vh - 48px)"
@@ -135,7 +135,7 @@ An agreement that indicates you are willing to provide access to specific data u
       showControls="{true}"
       showBackground="{true}"
       onEdgeInfoClick="{(e) => { if (e.edgeId === 'e-pa-ea') { agreementsDialog.open() } else if (e.edgeId === 'e-signed') { auditTrailDialog.open() } else { edgeLabel = e.label; edgeId = e.edgeId; edgeInfoDialog.open() } }}"
-      nodes="{(phase, phaseLabel, pulse.active, pulse.currentEdge, offeredTerm, agreementDecision, agreementCount, acceptedCount, aliceDataStore.length, kleindorfersDataStore.length, getNodes())}"
+      nodes="{(phase, phaseLabel, phaseMessage, pulse.active, pulse.currentEdge, offeredTerm, agreementDecision, agreementCount, acceptedCount, aliceDataStore.length, kleindorfersDataStore.length, getNodes())}"
       edges="{getEdges()}">
       <PersonNode />
       <PersonAgentNode />
@@ -143,7 +143,10 @@ An agreement that indicates you are willing to provide access to specific data u
       <EntityAgentNode />
       <EntityNode />
       <HStack>
-         <H1>{phaseLabel}</H1> <ControlNode />
+        <H1>
+          {phaseLabel} {phaseMessage}
+        </H1>
+        <ControlNode />
       </HStack>
     </ReactFlowCanvas>
   </Stack>
