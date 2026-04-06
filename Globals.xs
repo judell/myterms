@@ -127,7 +127,7 @@ function onRoundTripComplete() {
       buttonEnabled = true;
     } else {
       phase = 7;
-      phaseLabel = '';
+      phaseLabel = '6';
       phaseMessage = 'Agreement rejected';
       buttonLabel = 'Start Over';
       buttonEnabled = true;
@@ -145,7 +145,7 @@ function onRoundTripComplete() {
       window.__reactFlowCanvasApi.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true);
     }
     phase = 7;
-    phaseLabel = '';
+    phaseLabel = '7';
     phaseMessage = agreementDecision === 'yes' ? 'Agreement signed and posted to ledger' : 'Agreement rejected';
     buttonLabel = 'Start Over';
     buttonEnabled = true;

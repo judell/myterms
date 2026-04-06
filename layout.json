@@ -13,16 +13,16 @@
       "height": 200
     },
     "agreements": {
-      "x": 288,
-      "y": -288,
+      "x": 272,
+      "y": -272,
       "width": 350,
       "height": 402
     },
     "entity-agent": {
-      "x": 816,
-      "y": -352,
+      "x": 800,
+      "y": -368,
       "width": 300,
-      "height": 200
+      "height": 216
     },
     "entity": {
       "x": 816,
