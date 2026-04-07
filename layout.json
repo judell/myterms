@@ -1,19 +1,19 @@
 {
   "nodes": {
     "person": {
-      "x": -128,
-      "y": -368,
-      "width": 268,
-      "height": 300
+      "x": -336,
+      "y": -384,
+      "width": 540,
+      "height": 380
     },
     "person-agent": {
       "x": 320,
-      "y": 336,
+      "y": 304,
       "width": 300,
       "height": 200
     },
     "agreements": {
-      "x": 272,
+      "x": 304,
       "y": -272,
       "width": 350,
       "height": 402
@@ -25,10 +25,10 @@
       "height": 216
     },
     "entity": {
-      "x": 816,
+      "x": 736,
       "y": 160,
-      "width": 300,
-      "height": 320
+      "width": 604,
+      "height": 416
     },
     "control": {
       "x": 400,

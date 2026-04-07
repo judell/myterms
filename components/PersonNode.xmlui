@@ -32,27 +32,12 @@
       <Option value="SD-BASE" label="SD-BASE" />
       <Option value="PDC-AI" label="PDC-AI" />
     </Select>
-    <Text
-      fontSize="$fontSize-small"
-      fontWeight="bold"
-      when="{aliceDataStore.length > 0 && pulseReached('verifies agreement')}">
-      Data Store ({aliceDataStore.length})
-    </Text>
-    <Items data="{aliceDataStore}" when="{pulseReached('verifies agreement')}">
-      <VStack gap="0">
-        <Text
-          fontSize="$fontSize-small"
-          fontWeight="bold"
-          color="{$item.term.indexOf('rejected') >= 0 ? '$color-error' : '$color-success'}">
-          {$item.term.indexOf('rejected') >= 0 ? '✗' : '✓'} {$item.term} with {$item.counterparty}
-        </Text>
-        <Text fontSize="$fontSize-small" color="$textColor-secondary">
-          {$item.timestamp}
-        </Text>
-        <Text fontSize="$fontSize-small" color="$textColor-secondary">
-          {$item.country}
-        </Text>
-      </VStack>
-    </Items>
+    <Text fontSize="$fontSize-small" fontWeight="bold">Personal Data Store</Text>
+    <Table data="{alicePersonalDataStore}" fontSize="$fontSize-small" noDataTemplate="">
+      <Column bindTo="term" header="Agreement" width="2*" />
+      <Column bindTo="counterparty" header="With" />
+      <Column bindTo="timestamp" header="Date" />
+
+    </Table>
   </VStack>
 </Component>

@@ -5,9 +5,9 @@
   global.agreementDecision="{''}"
   global.agreementCount="{0}"
   global.acceptedCount="{0}"
-  global.aliceDataStore="{[]}"
-  global.kleindorfersDataStore="{[]}"
   global.kleindorfersTerms="{[{terms:'SD-BASE',policy:'Accept'},{terms:'PDC-AI',policy:'Reject'}]}"
+  global.alicePersonalDataStore="{[]}"
+  global.kleindorfersOrgDataStore="{[]}"
   global.phase="{0}"
   global.phaseLabel="{'1'}"
   global.phaseMessage="{'Alice and Kleindorfer\'s delegate agency'}"
@@ -52,7 +52,7 @@
       onClick="helpDialog.open()" />
     <Icon
       name="save"
-      tooltip="Copy layout to clipboard"
+      tooltip="Save layout"
       aria-label="Save layout"
       width="20px"
       height="20x"

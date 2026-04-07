@@ -57,8 +57,6 @@ function delegate() {
   offeredTerm = "";
   agreementDecision = "";
   acceptedCount = 0;
-  aliceDataStore = [];
-  kleindorfersDataStore = [];
   kleindorfersTerms = [
     { terms: "SD-BASE", policy: "Accept" },
     { terms: "PDC-AI", policy: "Reject" },
@@ -126,6 +124,8 @@ function onRoundTripComplete() {
       buttonLabel = 'Verify';
       buttonEnabled = true;
     } else {
+      alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (rejected)', "Kleindorfer's")];
+      kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (rejected)', 'Alice')];
       phase = 7;
       phaseLabel = '6';
       phaseMessage = 'Agreement rejected';
@@ -138,8 +138,9 @@ function onRoundTripComplete() {
     kleindorfersTerms = kleindorfersTerms.map(function(t) {
       return t.terms === offeredTerm ? { terms: t.terms, policy: agreementDecision === 'yes' ? 'Accept' : 'Reject' } : t;
     });
-    aliceDataStore = [...aliceDataStore, makeStoreEntry(offeredTerm + ' (' + (agreementDecision === 'yes' ? 'accepted' : 'rejected') + ')', "Kleindorfer's")];
-    kleindorfersDataStore = [...kleindorfersDataStore, makeStoreEntry(offeredTerm + ' (' + (agreementDecision === 'yes' ? 'accepted' : 'rejected') + ')', 'Alice')];
+    status = agreementDecision === 'yes' ? 'accepted' : 'rejected';
+    alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (' + status + ')', "Kleindorfer's")];
+    kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (' + status + ')', 'Alice')];
     if (agreementDecision === 'yes') {
       acceptedCount = acceptedCount + 1;
       window.__reactFlowCanvasApi.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true);
@@ -171,8 +172,6 @@ function startOver() {
   offeredTerm = '';
   agreementDecision = '';
   acceptedCount = 0;
-  aliceDataStore = [];
-  kleindorfersDataStore = [];
   kleindorfersTerms = [
     { terms: 'SD-BASE', policy: 'Accept' },
     { terms: 'PDC-AI', policy: 'Reject' },
@@ -248,3 +247,9 @@ function getEdges() {
 }
 
 var layout = null;
+var status = '';
+var hasDelegated = false;
+
+function stepLabel(n) {
+  return String(n - (hasDelegated ? 1 : 0));
+}
