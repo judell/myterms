@@ -79,3 +79,7 @@ Node positions are defined in `layout.json`. A save button in the header exports
 ## The co-evolution
 
 The demo and the ReactFlowCanvas component co-evolved. Features like transient edges, round trip animation, concurrent pulses, chromeless nodes, and the canvas API for child nodes were all driven by the demo's needs. The [package README](https://github.com/xmlui-org/xmlui/tree/main/packages/xmlui-react-flow) documents the full API.
+
+## See also
+
+https://www.xmlui.org/blog/semantic-trace
