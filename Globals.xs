@@ -254,3 +254,99 @@ var hasDelegated = false;
 function stepLabel(n) {
   return String(n - (hasDelegated ? 1 : 0));
 }
+
+// --- ProcessFlowDiagram adapter ---
+
+function diagramPhase(diagram, fallbackPhase) {
+  if (diagram && diagram.phase !== undefined) {
+    return diagram.phase;
+  }
+  return fallbackPhase;
+}
+
+function getProcessFlowSteps() {
+  // myterms has a complex branching flow that the current ProcessFlowDiagram
+  // step model cannot fully express. This maps what it can:
+  //
+  // Phases that ARE expressible as linear steps with pulse effects:
+  //   - delegate (phase 0 → 1): two parallel pulses
+  //
+  // Phases that NEED framework work:
+  //   - lookup (phase 1 → 2 → 3): transient edge + round trip + cleanup
+  //   - send/proffer (phase 3 → 4 → 5): node-driven event + pulse sequence
+  //   - consult (phase 5 → 6): transient edge + round trip + branching
+  //   - verify/agree (phase 6 → 7): transient edge + pulse + branching
+  //   - startOver (phase 7 → 0): partial reset
+  //
+  // For now we express only the delegate step to prove the harness works.
+  // The remaining steps use the legacy phase machine via the adapter bridge.
+  return [
+    {
+      id: 'delegate',
+      title: '1',
+      message: "Alice and Kleindorfer's delegate agency",
+      actionLabel: 'Delegate',
+      phase: 0,
+      runningPhase: 'delegating',
+      completeAfterMs: pulseDuration,
+      run: [
+        { type: 'pulse', edge: 'delegates agency', durationMs: pulseDuration },
+        { type: 'pulse', edge: 'delegates personal agency', durationMs: pulseDuration },
+      ],
+    },
+    {
+      id: 'lookup',
+      title: '2',
+      message: 'Alice looks up terms',
+      actionLabel: 'Lookup',
+      phase: 1,
+      // TODO: needs transient edge + round trip effects
+      // For now, falls through to legacy phase machine
+    },
+    {
+      id: 'choose-term',
+      title: '3',
+      message: "Choose a term from Alice's list",
+      actionLabel: '',
+      phase: 3,
+      actionEnabled: false,
+      // TODO: needs node-driven event (Select → sendTerm)
+    },
+    {
+      id: 'proffer',
+      title: '4',
+      message: "Alice's agent proffers agreement",
+      actionLabel: 'Proffer',
+      phase: 4,
+      runningPhase: 'proffering',
+      // TODO: needs pulse sequence effect
+    },
+    {
+      id: 'consult',
+      title: '5',
+      message: "Kleindorfer's agent consults policy",
+      actionLabel: 'Consult Policy',
+      phase: 5,
+      runningPhase: 'consulting',
+      // TODO: needs transient edge + round trip + branch on agreementDecision
+    },
+    {
+      id: 'verify',
+      title: '6',
+      message: "Kleindorfer's agent verifies agreement",
+      actionLabel: 'Verify',
+      phase: 6,
+      runningPhase: 'verifying',
+      // TODO: needs transient edge + pulse + durable signed edge
+    },
+    {
+      id: 'done',
+      title: '',
+      message: 'Flow complete',
+      actionLabel: 'Start Over',
+      phase: 7,
+      restartOnAction: true,
+      clearPulseOnRestart: true,
+    },
+  ];
+}

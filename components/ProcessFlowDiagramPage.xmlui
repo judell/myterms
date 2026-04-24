@@ -1,0 +1,91 @@
+<Component name="ProcessFlowDiagramPage" var.edgeLabel="" var.edgeId="">
+
+  <ModalDialog id="edgeInfoDialog" title="{edgeLabel}">
+    <VStack gap="$space-2">
+      <Text>
+        Relationship: {edgeLabel}
+      </Text>
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">
+        Edge ID: {edgeId}
+      </Text>
+    </VStack>
+  </ModalDialog>
+
+  <ModalDialog id="agreementsDialog" title="Possible MyTerms Agreements">
+    <VStack gap="$space-2">
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">
+        Public Website
+      </Text>
+      <Text>SD-BASE</Text>
+      <Text>PDC-AI</Text>
+    </VStack>
+  </ModalDialog>
+
+  <ModalDialog id="auditTrailDialog" title="Audit Trail">
+    <VStack gap="$space-2">
+      <Text fontWeight="bold">
+        Signed Agreement: {offeredTerm}
+      </Text>
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">
+        Both parties have signed. Identical copies stored.
+      </Text>
+    </VStack>
+  </ModalDialog>
+
+  <DataSource
+    id="layoutData"
+    url="layout.json"
+    onLoaded="{(data) => { layout = data }}" />
+
+  <Stack
+    height="calc(100vh - 48px)"
+    width="100%"
+    when="{layout !== null}"
+    position="relative">
+    <VStack
+      position="absolute"
+      top="$space-2"
+      right="$space-2"
+      zIndex="30"
+      backgroundColor="rgba(255,255,255,0.92)"
+      border="1px solid $borderColor"
+      borderRadius="$borderRadius-md"
+      padding="$space-2"
+      gap="$space-1">
+      <Text fontWeight="bold" fontSize="$fontSize-small">
+        Process Flow Route
+      </Text>
+      <Text fontSize="$fontSize-small" color="$textColor-secondary">
+        Path: {$pathname}
+      </Text>
+    </VStack>
+    <ProcessFlowDiagram
+      fitView="{true}"
+      fitViewPadding="{.15}"
+      snapToGrid="{true}"
+      showMinimap="{false}"
+      showControls="{true}"
+      showBackground="{true}"
+      steps="{getProcessFlowSteps()}"
+      onPhaseChange="{(e) => { phase = e.phase }}"
+      onEdgeInfoClick="{(e) => { if (e.edgeId === 'e-pa-ea') { agreementsDialog.open() } else if (String(e.edgeId).indexOf('e-signed') === 0) { auditTrailDialog.open() } else { edgeLabel = e.label; edgeId = e.edgeId; edgeInfoDialog.open() } }}"
+      nodes="{(phase, phaseLabel, phaseMessage, buttonLabel, buttonEnabled, offeredTerm, agreementDecision, acceptedCount, getNodes().filter((n) => n.id !== 'control'))}"
+      edges="{getEdges()}">
+      <NodeTemplate nodeId="person">
+        <PersonNode />
+      </NodeTemplate>
+      <NodeTemplate nodeId="person-agent">
+        <PersonAgentNode />
+      </NodeTemplate>
+      <NodeTemplate nodeId="agreements">
+        <AgreementsPanel />
+      </NodeTemplate>
+      <NodeTemplate nodeId="entity-agent">
+        <EntityAgentNode />
+      </NodeTemplate>
+      <NodeTemplate nodeId="entity">
+        <EntityNode />
+      </NodeTemplate>
+    </ProcessFlowDiagram>
+  </Stack>
+</Component>

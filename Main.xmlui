@@ -40,6 +40,14 @@
     <Text fontWeight="bold">
       MyTerms
     </Text>
+    <NavLink
+      label="Current"
+      to="/"
+      fontSize="$fontSize-small" />
+    <NavLink
+      label="Process Flow"
+      to="/process-flow"
+      fontSize="$fontSize-small" />
     <SpaceFiller />
     <Icon
       name="message-circle-question"
@@ -65,6 +73,9 @@
   <Pages>
     <Page url="/">
       <ReactFlowPage />
+    </Page>
+    <Page url="/process-flow">
+      <ProcessFlowDiagramPage />
     </Page>
   </Pages>
 
