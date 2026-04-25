@@ -103,32 +103,40 @@ An agreement that indicates you are willing to provide access to specific data u
     url="layout.json"
     onLoaded="{(data) => { layout = data }}" />
 
-  <ChangeListener
-    listenTo="{pulse.active}"
-    onDidChange="{() => { if (!pulse.active && phase === 'sending') { cleanupSendEdge(); phase = 4; phaseLabel = stepLabel(4); phaseMessage = 'Alice\u0027s agent proffers agreement'; buttonLabel = 'Proffer'; buttonEnabled = true } if (!pulse.active && phase === 'proffering') { phase = 5; phaseLabel = stepLabel(5); phaseMessage = 'Kleindorfer\u0027s agent consults policy'; buttonLabel = 'Consult Policy'; buttonEnabled = true } }}" />
+  <!-- Step machine completion triggers -->
 
+  <!-- Fixed-duration completion (delegate step) -->
+  <Timer
+    enabled="{running && getProcessFlowSteps()[stepIndex].completeAfterMs > 0}"
+    interval="{pulseDuration}"
+    onTick="{() => { onTimerComplete() }}" />
+
+  <!-- Round-trip completion (lookup, consult, verify steps) -->
+  <Timer
+    enabled="{running && getProcessFlowSteps()[stepIndex].completeAfterRoundTrip}"
+    interval="{pulseDuration * 2}"
+    onTick="{() => { onRoundTripTimerComplete() }}" />
+
+  <!-- Node-driven completion: term selection -->
   <ChangeListener
     listenTo="{offeredTerm}"
-    onDidChange="{() => { if (offeredTerm !== '') { sendTerm() } }}" />
+    onDidChange="{() => { onTermSelected() }}" />
 
+  <!-- Pulse sequence engine -->
   <Timer
     enabled="{pulse.active}"
     interval="{pulseDuration}"
     onTick="{() => { if (pulse.step < pulse.edges.length) { canvas.pulseEdge(pulse.edges[pulse.step], pulseDuration); pulse = { active: true, edges: pulse.edges, step: pulse.step + 1, currentEdge: pulse.edges[pulse.step] } } else { canvas.clearPulse(); pulse = { active: false, edges: pulse.edges, step: pulse.step, currentEdge: pulse.currentEdge } } }}" />
 
+  <!-- Pulse sequence completion -->
+  <ChangeListener
+    listenTo="{pulse.active}"
+    onDidChange="{() => { if (!pulse.active && running) { onPulseSequenceComplete() } }}" />
+
+  <!-- Domain: agreement decision from pulse edge -->
   <ChangeListener
     listenTo="{pulse.currentEdge}"
     onDidChange="{(change) => onPulseEdgeChange(change)}" />
-
-  <Timer
-    enabled="{phase === 'delegating'}"
-    interval="{pulseDuration}"
-    onTick="{() => { phase = 1; phaseLabel = stepLabel(2); phaseMessage = 'Alice looks up terms'; buttonLabel = 'Lookup'; buttonEnabled = true }}" />
-
-  <Timer
-    enabled="{roundTrip !== ''}"
-    interval="{pulseDuration * 2}"
-    onTick="{() => onRoundTripComplete()}" />
 
   <Stack
     height="calc(100vh - 48px)"

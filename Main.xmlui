@@ -14,8 +14,12 @@
   global.buttonLabel="{'Delegate'}"
   global.buttonEnabled="{true}"
   global.pulseDuration="{1800}"
+  global.running="{false}"
+  global.stepIndex="{0}"
+  global.hasDelegated="{false}"
   global.roundTrip="{''}"
-  global.pulse="{{ active: false, edges: [], step: -1, currentEdge: '' }}">
+  global.pulse="{{ active: false, edges: [], step: -1, currentEdge: '' }}"
+  global.layout="{null}">
   <DataSource
     id="readmeData"
     url="{'https://api.github.com/repos/judell/myterms/readme'}"
@@ -40,14 +44,6 @@
     <Text fontWeight="bold">
       MyTerms
     </Text>
-    <NavLink
-      label="Current"
-      to="/"
-      fontSize="$fontSize-small" />
-    <NavLink
-      label="Process Flow"
-      to="/process-flow"
-      fontSize="$fontSize-small" />
     <SpaceFiller />
     <Icon
       name="message-circle-question"
@@ -73,9 +69,6 @@
   <Pages>
     <Page url="/">
       <ReactFlowPage />
-    </Page>
-    <Page url="/process-flow">
-      <ProcessFlowDiagramPage />
     </Page>
   </Pages>
 

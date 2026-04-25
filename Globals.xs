@@ -1,3 +1,174 @@
+// --- Step machine runtime ---
+
+function applyStep(index) {
+  const steps = getProcessFlowSteps();
+  const step = steps[index];
+  stepIndex = index;
+  phase = step.phase;
+  phaseLabel = step.title;
+  phaseMessage = step.message;
+  buttonLabel = step.actionLabel || '';
+  buttonEnabled = step.actionEnabled !== false;
+
+  // Run onEnter callback if defined
+  if (step.onEnter) {
+    step.onEnter();
+  }
+}
+
+function nextStep() {
+  const steps = getProcessFlowSteps();
+  const step = steps[stepIndex];
+
+  if (step.restartOnAction) {
+    const api = window.__reactFlowCanvasApi;
+    api.clearPulse();
+    // Remove accumulated signed edges
+    for (let i = 1; i <= acceptedCount; i++) {
+      api.removeEdge('e-signed-' + i);
+    }
+    offeredTerm = '';
+    agreementDecision = '';
+    acceptedCount = 0;
+    kleindorfersTerms = [
+      { terms: 'SD-BASE', policy: 'Accept' },
+      { terms: 'PDC-AI', policy: 'Reject' },
+    ];
+    // Restart goes to step 1 (lookup), not step 0 (delegate) on subsequent runs
+    applyStep(hasDelegated ? 1 : 0);
+    return;
+  }
+
+  phase = step.runningPhase || step.phase;
+  buttonEnabled = false;
+  running = true;
+
+  const api = window.__reactFlowCanvasApi;
+  if (api) {
+    const effects = step.run || [];
+    for (let i = 0; i < effects.length; i++) {
+      const effect = effects[i];
+      if (effect.type === 'pulse' && effect.edge) {
+        api.pulseEdge(effect.edge, effect.durationMs || pulseDuration);
+      } else if (effect.type === 'pulseRoundTrip' && effect.edge) {
+        api.pulseEdgeRoundTrip(effect.edge, effect.durationMs || pulseDuration);
+      } else if (effect.type === 'clearPulse') {
+        api.clearPulse();
+      } else if (effect.type === 'addEdge') {
+        api.addEdge(effect.id, effect.source, effect.target,
+          effect.sourceHandle, effect.targetHandle, effect.label,
+          effect.noArrow, effect.data);
+      } else if (effect.type === 'removeEdge') {
+        api.removeEdge(effect.edgeId);
+      } else if (effect.type === 'pulseSequence' && effect.edges) {
+        pulse = { active: true, edges: effect.edges, step: 0, currentEdge: '' };
+      }
+    }
+  }
+
+  // Mark first delegation
+  if (step.id === 'delegate') {
+    hasDelegated = true;
+  }
+}
+
+function completeCurrentStep() {
+  running = false;
+  const steps = getProcessFlowSteps();
+  const step = steps[stepIndex];
+
+  // Run cleanup effects
+  const api = window.__reactFlowCanvasApi;
+  if (api && step.cleanup) {
+    for (let i = 0; i < step.cleanup.length; i++) {
+      const effect = step.cleanup[i];
+      if (effect.type === 'removeEdge') {
+        api.removeEdge(effect.edgeId);
+      }
+    }
+  }
+
+  // Run onComplete callback if defined
+  if (step.onComplete) {
+    step.onComplete();
+  }
+
+  const nextIndex = resolveNextStep(step, stepIndex);
+  applyStep(nextIndex);
+}
+
+function resolveNextStep(step, currentIndex) {
+  const steps = getProcessFlowSteps();
+  // Conditional branching
+  if (step.nextIf) {
+    for (let i = 0; i < step.nextIf.length; i++) {
+      const branch = step.nextIf[i];
+      if (branch.when()) {
+        return findStepIndex(branch.goto);
+      }
+    }
+  }
+  if (typeof step.next === 'number') {
+    return step.next;
+  }
+  if (typeof step.next === 'string') {
+    return findStepIndex(step.next);
+  }
+  return Math.min(currentIndex + 1, steps.length - 1);
+}
+
+function findStepIndex(id) {
+  const steps = getProcessFlowSteps();
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].id === id) return i;
+  }
+  return 0;
+}
+
+// --- Completion triggers ---
+// These are called from Timers/ChangeListeners in the page markup
+
+function onTimerComplete() {
+  if (running) {
+    completeCurrentStep();
+  }
+}
+
+function onRoundTripTimerComplete() {
+  if (running) {
+    completeCurrentStep();
+  }
+}
+
+function onPulseSequenceComplete() {
+  if (running && !pulse.active) {
+    const step = getProcessFlowSteps()[stepIndex];
+    // Only complete if this step uses pulse sequences (send, proffer)
+    if (step.id === 'send' || (step.run && step.run.some(e => e.type === 'pulseSequence'))) {
+      completeCurrentStep();
+    }
+  }
+}
+
+function onTermSelected() {
+  if (offeredTerm !== '' && phase === 3) {
+    // Node-driven step advance: user chose a term
+    stepIndex = findStepIndex('send');
+    sendTermEffects();
+    running = true;
+  }
+}
+
+function sendTermEffects() {
+  phase = 'sending';
+  buttonEnabled = false;
+  const api = window.__reactFlowCanvasApi;
+  api.addEdge('e-p-pa-send', 'person', 'person-agent', 'bottom-right', 'top-right', 'send', false, { labelPosition: 60 });
+  pulse = { active: true, edges: ['send'], step: 0, currentEdge: 'lookup' };
+}
+
+// --- Domain helpers ---
+
 function responsive(small, large) {
   return mediaSize.sizeIndex <= 2 ? small : large;
 }
@@ -18,183 +189,168 @@ function lookupTermPolicy(term) {
   return "Reject";
 }
 
-function pulseReached(edgeLabel) {
-  if (!pulse.active && pulse.currentEdge === "") return false;
-  if (!pulse.active) return true;
-  return (
-    pulse.edges.indexOf(pulse.currentEdge) > pulse.edges.indexOf(edgeLabel)
-  );
-}
-
-function pulseNotReached(edgeLabel) {
-  return !pulseReached(edgeLabel);
-}
-
 function onPulseEdgeChange(change) {
   if (change.newValue === "proffers" && offeredTerm !== "") {
     agreementDecision =
-      kleindorfersTerms.find(function (t) {
-        return t.terms === offeredTerm;
-      }) &&
-      kleindorfersTerms.find(function (t) {
-        return t.terms === offeredTerm;
-      }).policy === "Accept"
+      kleindorfersTerms.find(t => t.terms === offeredTerm) &&
+      kleindorfersTerms.find(t => t.terms === offeredTerm).policy === "Accept"
         ? "yes"
         : "no";
   }
 }
 
-function nextStep() {
-  if (phase === 0) delegate();
-  else if (phase === 1) getTerms();
-  else if (phase === 4) proffer();
-  else if (phase === 5) applyPolicy();
-  else if (phase === 6) agree();
-  else if (phase === 7) startOver();
+function stepLabel(n) {
+  return String(n - (hasDelegated ? 1 : 0));
 }
 
-function delegate() {
-  offeredTerm = "";
-  agreementDecision = "";
-  acceptedCount = 0;
-  kleindorfersTerms = [
-    { terms: "SD-BASE", policy: "Accept" },
-    { terms: "PDC-AI", policy: "Reject" },
+// --- Step declarations ---
+
+function getProcessFlowSteps() {
+  return [
+    {
+      id: 'delegate',
+      title: '1',
+      message: "Alice and Kleindorfer's delegate agency",
+      actionLabel: 'Delegate',
+      phase: 0,
+      runningPhase: 'delegating',
+      completeAfterMs: pulseDuration,
+      run: [
+        { type: 'clearPulse' },
+        { type: 'pulse', edge: 'delegates agency', durationMs: pulseDuration },
+        { type: 'pulse', edge: 'delegates personal agency', durationMs: pulseDuration },
+      ],
+      onEnter: () => {
+        offeredTerm = '';
+        agreementDecision = '';
+        acceptedCount = 0;
+        kleindorfersTerms = [
+          { terms: 'SD-BASE', policy: 'Accept' },
+          { terms: 'PDC-AI', policy: 'Reject' },
+        ];
+      },
+    },
+    {
+      id: 'lookup',
+      title: stepLabel(2),
+      message: 'Alice looks up terms',
+      actionLabel: 'Lookup',
+      phase: 1,
+      runningPhase: 2,
+      completeAfterRoundTrip: true,
+      run: [
+        { type: 'addEdge', id: 'e-p-ag', source: 'person', target: 'agreements', sourceHandle: 'right-top', targetHandle: 'left-top', label: 'lookup' },
+        { type: 'pulseRoundTrip', edge: 'lookup', durationMs: pulseDuration },
+      ],
+      cleanup: [
+        { type: 'removeEdge', edgeId: 'e-p-ag' },
+      ],
+    },
+    {
+      id: 'choose-term',
+      title: stepLabel(3),
+      message: "Choose a term from Alice's list",
+      actionLabel: '',
+      phase: 3,
+      actionEnabled: false,
+      // Completion is driven by onTermSelected() via ChangeListener on offeredTerm
+    },
+    {
+      id: 'send',
+      title: stepLabel(3),
+      message: "Sending term to Alice's agent",
+      phase: 'sending',
+      actionLabel: '',
+      actionEnabled: false,
+      cleanup: [
+        { type: 'removeEdge', edgeId: 'e-p-pa-send' },
+      ],
+      // Completion driven by pulse sequence finishing (ChangeListener on pulse.active)
+    },
+    {
+      id: 'proffer',
+      title: stepLabel(4),
+      message: "Alice's agent proffers agreement",
+      actionLabel: 'Proffer',
+      phase: 4,
+      runningPhase: 'proffering',
+      // Completion driven by pulse sequence finishing (ChangeListener on pulse.active)
+      run: [
+        { type: 'pulseSequence', edges: ['proffers'] },
+      ],
+    },
+    {
+      id: 'consult',
+      title: stepLabel(5),
+      message: "Kleindorfer's agent consults policy",
+      actionLabel: 'Consult Policy',
+      phase: 5,
+      runningPhase: 'consulting',
+      completeAfterRoundTrip: true,
+      run: [
+        { type: 'addEdge', id: 'e-ea-consult', source: 'entity-agent', target: 'entity', sourceHandle: 'bottom-left', targetHandle: 'top-left', label: 'consults policy' },
+        { type: 'pulseRoundTrip', edge: 'consults policy', durationMs: pulseDuration },
+      ],
+      cleanup: [
+        { type: 'removeEdge', edgeId: 'e-ea-consult' },
+      ],
+      nextIf: [
+        { when: () => agreementDecision === 'yes', goto: 'verify' },
+        { when: () => agreementDecision === 'no', goto: 'rejected' },
+      ],
+      onComplete: () => {
+        if (agreementDecision === 'no') {
+          alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (rejected)', "Kleindorfer's")];
+          kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (rejected)', 'Alice')];
+        }
+      },
+    },
+    {
+      id: 'verify',
+      title: stepLabel(6),
+      message: "Kleindorfer's agent verifies agreement",
+      actionLabel: 'Verify',
+      phase: 6,
+      runningPhase: 'verifying',
+      completeAfterRoundTrip: true,
+      run: [
+        { type: 'addEdge', id: 'e-ea-verify', source: 'entity-agent', target: 'entity', sourceHandle: 'bottom-left', targetHandle: 'top-left', label: 'verifies agreement', noArrow: false, data: { labelPosition: 30 } },
+        { type: 'pulse', edge: 'verifies agreement', durationMs: pulseDuration * 2 },
+      ],
+      cleanup: [
+        { type: 'removeEdge', edgeId: 'e-ea-verify' },
+      ],
+      onComplete: () => {
+        const status = agreementDecision === 'yes' ? 'accepted' : 'rejected';
+        alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (' + status + ')', "Kleindorfer's")];
+        kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (' + status + ')', 'Alice')];
+        if (agreementDecision === 'yes') {
+          acceptedCount = acceptedCount + 1;
+          window.__reactFlowCanvasApi.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true);
+        }
+      },
+      next: 'done',
+    },
+    {
+      id: 'rejected',
+      title: stepLabel(6),
+      message: 'Agreement rejected',
+      actionLabel: 'Start Over',
+      phase: 7,
+      restartOnAction: true,
+    },
+    {
+      id: 'done',
+      title: stepLabel(7),
+      message: agreementDecision === 'yes' ? 'Agreement signed and posted to ledger' : 'Agreement rejected',
+      actionLabel: 'Start Over',
+      phase: 7,
+      restartOnAction: true,
+    },
   ];
-  window.__reactFlowCanvasApi.clearPulse();
-  window.__reactFlowCanvasApi.pulseEdge("delegates agency", pulseDuration);
-  window.__reactFlowCanvasApi.pulseEdge("delegates personal agency", pulseDuration);
-  hasDelegated = true;
-  phase = "delegating";
-  buttonEnabled = false;
 }
 
-function getTerms() {
-  phase = 2;
-  phaseLabel = stepLabel(2);
-  phaseMessage = 'Alice looks up terms';
-  buttonEnabled = false;
-  const api = window.__reactFlowCanvasApi;
-  api.addEdge('e-p-ag', 'person', 'agreements', 'right-top', 'left-top', 'lookup');
-  api.pulseEdgeRoundTrip('lookup', pulseDuration);
-  roundTrip = 'lookup';
-}
-
-function sendTerm() {
-  phase = 'sending';
-  buttonEnabled = false;
-  const api = window.__reactFlowCanvasApi;
-  api.addEdge('e-p-pa-send', 'person', 'person-agent', 'bottom-right', 'top-right', 'send', false, { labelPosition: 60 });
-  pulse = { active: true, edges: ['send'], step: 0, currentEdge: 'lookup' };
-}
-
-function cleanupSendEdge() {
-  window.__reactFlowCanvasApi.removeEdge('e-p-pa-send');
-}
-
-function proffer() {
-  phase = 'proffering';
-  buttonEnabled = false;
-  pulse = { active: true, edges: ['proffers'], step: 0, currentEdge: 'lookup' };
-}
-
-function applyPolicy() {
-  phase = 'consulting';
-  buttonEnabled = false;
-  const api = window.__reactFlowCanvasApi;
-  api.addEdge('e-ea-consult', 'entity-agent', 'entity', 'bottom-left', 'top-left', 'consults policy');
-  api.pulseEdgeRoundTrip('consults policy', pulseDuration);
-  roundTrip = 'consults policy';
-}
-
-function onRoundTripComplete() {
-  if (roundTrip === 'lookup') {
-    window.__reactFlowCanvasApi.removeEdge('e-p-ag');
-    phase = 3;
-    phaseLabel = stepLabel(3);
-    phaseMessage = "Choose a term from Alice's list";
-    buttonLabel = '';
-    buttonEnabled = false;
-  }
-  if (roundTrip === 'consults policy') {
-    window.__reactFlowCanvasApi.removeEdge('e-ea-consult');
-    if (agreementDecision === 'yes') {
-      phase = 6;
-      phaseLabel = stepLabel(6);
-      phaseMessage = "Kleindorfer's agent verifies agreement";
-      buttonLabel = 'Verify';
-      buttonEnabled = true;
-    } else {
-      alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (rejected)', "Kleindorfer's")];
-      kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (rejected)', 'Alice')];
-      phase = 7;
-      phaseLabel = stepLabel(6);
-      phaseMessage = 'Agreement rejected';
-      buttonLabel = 'Start Over';
-      buttonEnabled = true;
-    }
-  }
-  if (roundTrip === 'verifies agreement') {
-    window.__reactFlowCanvasApi.removeEdge('e-ea-verify');
-    kleindorfersTerms = kleindorfersTerms.map(function(t) {
-      return t.terms === offeredTerm ? { terms: t.terms, policy: agreementDecision === 'yes' ? 'Accept' : 'Reject' } : t;
-    });
-    status = agreementDecision === 'yes' ? 'accepted' : 'rejected';
-    alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (' + status + ')', "Kleindorfer's")];
-    kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (' + status + ')', 'Alice')];
-    if (agreementDecision === 'yes') {
-      acceptedCount = acceptedCount + 1;
-      window.__reactFlowCanvasApi.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true);
-    }
-    phase = 7;
-    phaseLabel = stepLabel(7);
-    phaseMessage = agreementDecision === 'yes' ? 'Agreement signed and posted to ledger' : 'Agreement rejected';
-    buttonLabel = 'Start Over';
-    buttonEnabled = true;
-  }
-  roundTrip = '';
-}
-
-function agree() {
-  phase = 'verifying';
-  buttonEnabled = false;
-  const api = window.__reactFlowCanvasApi;
-  api.addEdge('e-ea-verify', 'entity-agent', 'entity', 'bottom-left', 'top-left', 'verifies agreement', false, { labelPosition: 30 });
-  api.pulseEdge('verifies agreement', pulseDuration * 2);
-  roundTrip = 'verifies agreement';
-}
-
-function startOver() {
-  const api = window.__reactFlowCanvasApi;
-  // Remove all signed edges
-  for (let i = 1; i <= acceptedCount; i++) {
-    api.removeEdge('e-signed-' + i);
-  }
-  offeredTerm = '';
-  agreementDecision = '';
-  acceptedCount = 0;
-  kleindorfersTerms = [
-    { terms: 'SD-BASE', policy: 'Accept' },
-    { terms: 'PDC-AI', policy: 'Reject' },
-  ];
-  api.clearPulse();
-  phase = 1;
-  phaseLabel = stepLabel(2);
-  phaseMessage = 'Alice looks up terms';
-  buttonLabel = 'Lookup';
-  buttonEnabled = true;
-}
-
-function saveLayout() {
-  const json = JSON.stringify(window.__reactFlowCanvasApi.getLayout(), null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'layout.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
+// --- Node & edge builders ---
 
 function makeNode(id, label, extra) {
   const n = layout.nodes[id];
@@ -247,106 +403,13 @@ function getEdges() {
   ];
 }
 
-var layout = null;
-var status = '';
-var hasDelegated = false;
-
-function stepLabel(n) {
-  return String(n - (hasDelegated ? 1 : 0));
-}
-
-// --- ProcessFlowDiagram adapter ---
-
-function diagramPhase(diagram, fallbackPhase) {
-  if (diagram && diagram.phase !== undefined) {
-    return diagram.phase;
-  }
-  return fallbackPhase;
-}
-
-function getProcessFlowSteps() {
-  // myterms has a complex branching flow that the current ProcessFlowDiagram
-  // step model cannot fully express. This maps what it can:
-  //
-  // Phases that ARE expressible as linear steps with pulse effects:
-  //   - delegate (phase 0 → 1): two parallel pulses
-  //
-  // Phases that NEED framework work:
-  //   - lookup (phase 1 → 2 → 3): transient edge + round trip + cleanup
-  //   - send/proffer (phase 3 → 4 → 5): node-driven event + pulse sequence
-  //   - consult (phase 5 → 6): transient edge + round trip + branching
-  //   - verify/agree (phase 6 → 7): transient edge + pulse + branching
-  //   - startOver (phase 7 → 0): partial reset
-  //
-  // For now we express only the delegate step to prove the harness works.
-  // The remaining steps use the legacy phase machine via the adapter bridge.
-  return [
-    {
-      id: 'delegate',
-      title: '1',
-      message: "Alice and Kleindorfer's delegate agency",
-      actionLabel: 'Delegate',
-      phase: 0,
-      runningPhase: 'delegating',
-      completeAfterMs: pulseDuration,
-      run: [
-        { type: 'pulse', edge: 'delegates agency', durationMs: pulseDuration },
-        { type: 'pulse', edge: 'delegates personal agency', durationMs: pulseDuration },
-      ],
-    },
-    {
-      id: 'lookup',
-      title: '2',
-      message: 'Alice looks up terms',
-      actionLabel: 'Lookup',
-      phase: 1,
-      // TODO: needs transient edge + round trip effects
-      // For now, falls through to legacy phase machine
-    },
-    {
-      id: 'choose-term',
-      title: '3',
-      message: "Choose a term from Alice's list",
-      actionLabel: '',
-      phase: 3,
-      actionEnabled: false,
-      // TODO: needs node-driven event (Select → sendTerm)
-    },
-    {
-      id: 'proffer',
-      title: '4',
-      message: "Alice's agent proffers agreement",
-      actionLabel: 'Proffer',
-      phase: 4,
-      runningPhase: 'proffering',
-      // TODO: needs pulse sequence effect
-    },
-    {
-      id: 'consult',
-      title: '5',
-      message: "Kleindorfer's agent consults policy",
-      actionLabel: 'Consult Policy',
-      phase: 5,
-      runningPhase: 'consulting',
-      // TODO: needs transient edge + round trip + branch on agreementDecision
-    },
-    {
-      id: 'verify',
-      title: '6',
-      message: "Kleindorfer's agent verifies agreement",
-      actionLabel: 'Verify',
-      phase: 6,
-      runningPhase: 'verifying',
-      // TODO: needs transient edge + pulse + durable signed edge
-    },
-    {
-      id: 'done',
-      title: '',
-      message: 'Flow complete',
-      actionLabel: 'Start Over',
-      phase: 7,
-      restartOnAction: true,
-      clearPulseOnRestart: true,
-    },
-  ];
+function saveLayout() {
+  const json = JSON.stringify(window.__reactFlowCanvasApi.getLayout(), null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'layout.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
