@@ -20,7 +20,7 @@ This is analogous to how Creative Commons lets artists choose standard licenses 
 
 This interactive visualization walks through the core IEEE 7012 workflow:
 
-1. **Alice** (the person) selects a privacy term to proffer -- either SD-BASE (a base-level service delivery agreement) or PDC-AI (controlling use of personal data for AI training)
+1. **Alice** (the person) selects a privacy term to proffer -- either SD-BASE (a base-level service delivery agreement) or SD-BY-A (controlling use of personal data for AI training)
 2. **Alice's Agent** receives the chosen term and proffers it to the entity's agent
 3. **Possible MyTerms Agreements** lists the available standard-form agreements from the public roster
 4. **Kleindorfers Agent** (the entity's agent) evaluates the proffered term against Kleindorfers' policies and accepts or rejects it

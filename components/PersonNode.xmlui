@@ -30,7 +30,7 @@
       enabled="{offeredTerm === ''}"
       when="{phase === 3}">
       <Option value="SD-BASE" label="SD-BASE" />
-      <Option value="PDC-AI" label="PDC-AI" />
+      <Option value="SD-BY-A" label="SD-BY-A" />
     </Select>
     <Text fontSize="$fontSize-small" fontWeight="bold">Personal Data Store</Text>
     <Table data="{alicePersonalDataStore}" fontSize="$fontSize-small" noDataTemplate="">

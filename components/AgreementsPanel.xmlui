@@ -11,15 +11,15 @@
         SD-BASE
       </Text>
       <Text fontSize="$fontSize-small">
-        The base level service delivery relationship agreement. The default agreement for any individual using an agent to propose a MyTerms agreement to an organisation.
+        The base level service delivery relationship agreement. The default agreement for any individual using an agent to propose a MyTerms agreement to an organisation. It says you only use my information to provide the service.
       </Text>
     </VStack>
     <VStack gap="$space-1">
       <Text fontWeight="bold" fontSize="$fontSize-small">
-        PDC-AI
+        SD-BY-A
       </Text>
       <Text fontSize="$fontSize-small">
-        An agreement that indicates you are willing to provide access to specific data under your control for the purposes of Training and Operating AI technologies.
+        Extends SD-BASE with a requirement for data portability. 
       </Text>
     </VStack>
 

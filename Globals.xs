@@ -32,7 +32,7 @@ function nextStep() {
     acceptedCount = 0;
     kleindorfersTerms = [
       { terms: 'SD-BASE', policy: 'Accept' },
-      { terms: 'PDC-AI', policy: 'Reject' },
+      { terms: 'SD-BY-A', policy: 'Reject' },
     ];
     // Restart goes to step 1 (lookup), not step 0 (delegate) on subsequent runs
     applyStep(hasDelegated ? 1 : 0);
@@ -226,7 +226,7 @@ function getProcessFlowSteps() {
         acceptedCount = 0;
         kleindorfersTerms = [
           { terms: 'SD-BASE', policy: 'Accept' },
-          { terms: 'PDC-AI', policy: 'Reject' },
+          { terms: 'SD-BY-A', policy: 'Reject' },
         ];
       },
     },
