@@ -37,7 +37,13 @@
       <Column bindTo="term" header="Agreement" width="2*" />
       <Column bindTo="counterparty" header="With" />
       <Column bindTo="timestamp" header="Date" />
-
     </Table>
+    <Text when="{phase === 7 && offeredTerm === 'SD-BASE' && agreementDecision === 'yes'}" marginTop="$space-8">
+    "Now I can do business with Kleindorfer's on a trusted basis."
+    </Text>
+    <Text when="{phase === 7 && offeredTerm === 'SD-BY-DP' && agreementDecision === 'no'}" marginTop="$space-8">
+    "I'm not sure I want to do business with Kleindorfer's."
+    </Text>
+
   </VStack>
 </Component>
