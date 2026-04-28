@@ -5,7 +5,7 @@
   global.agreementDecision="{''}"
   global.agreementCount="{0}"
   global.acceptedCount="{0}"
-  global.kleindorfersTerms="{[{terms:'SD-BASE',policy:'Accept'},{terms:'SD-BY-A',policy:'Reject'}]}"
+  global.kleindorfersTerms="{[{terms:'SD-BASE',policy:'Accept'},{terms:'SD-BY-DP',policy:'Reject'}]}"
   global.alicePersonalDataStore="{[]}"
   global.kleindorfersOrgDataStore="{[]}"
   global.phase="{0}"

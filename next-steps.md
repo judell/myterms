@@ -14,7 +14,7 @@ Example data requests and outcomes:
 |---|---|---|
 | Shipping address (for delivery) | Allowed — service delivery | Allowed, but also sold to brokers |
 | Browsing history (for recommendations) | Allowed — scoped to session | Harvested permanently, shared with ad networks |
-| Purchase history (for AI model training) | Blocked (no SD-BY-A) | Used freely |
+| Purchase history (for AI model training) | Blocked (no SD-BY-DP) | Used freely |
 | Email (for third-party marketing) | Blocked | Sold |
 
 **What the audience sees:**
@@ -28,16 +28,16 @@ Example data requests and outcomes:
 
 **Architecture:** Extends the existing step machine with a post-signing phase. Data requests are a small table; each row resolves based on which agreements are in force. No structural changes needed.
 
-### SD-BY-A needs a visible quid pro quo
+### SD-BY-DP needs a visible quid pro quo
 
-In the current demo, there's no reason for Alice to proffer SD-BY-A — it grants access to her data for AI training with nothing in return. SD-BY-A only makes sense as part of an explicit value exchange: a discount, a data dividend, access to a premium service tier, etc.
+In the current demo, there's no reason for Alice to proffer SD-BY-DP — it grants access to her data for AI training with nothing in return. SD-BY-DP only makes sense as part of an explicit value exchange: a discount, a data dividend, access to a premium service tier, etc.
 
-This makes SD-BY-A the strongest motivating example for the post-agreement simulation:
+This makes SD-BY-DP the strongest motivating example for the post-agreement simulation:
 
-- Kleindorfer's offers Alice a 20% discount (or monthly data dividend) if she signs SD-BY-A
+- Kleindorfer's offers Alice a 20% discount (or monthly data dividend) if she signs SD-BY-DP
 - Alice's dashboard shows the tradeoff: "sharing training data with Kleindorfer's → receiving $X/month"
-- Alice can revoke SD-BY-A and see the compensation stop
-- Without this, SD-BY-A in the demo is just a way to trigger the "rejected" path — useful for showing protocol mechanics, but it makes Alice look like she's acting against her own interests
+- Alice can revoke SD-BY-DP and see the compensation stop
+- Without this, SD-BY-DP in the demo is just a way to trigger the "rejected" path — useful for showing protocol mechanics, but it makes Alice look like she's acting against her own interests
 
 ## 2. Alice's Relationship Dashboard
 
@@ -50,7 +50,7 @@ Evolve Alice's "Personal Data Store" from a transaction log into a dashboard she
 - **Requests blocked** — what her agent denied, so she can see the agreement working for her
 - **Compliance signals** — whether an entity is honoring its terms (e.g., making requests that exceed the agreement scope)
 - **Expiration / renewal** — when agreements need attention
-- **Entity comparison** — Kleindorfer's accepted SD-BASE and SD-BY-A; Acme only accepted SD-BASE — so Alice can make informed choices about who to do business with
+- **Entity comparison** — Kleindorfer's accepted SD-BASE and SD-BY-DP; Acme only accepted SD-BASE — so Alice can make informed choices about who to do business with
 
 **Why it matters:** This turns the personal data store from a receipt box into a control panel. It's the concrete expression of the individual-as-first-party vision: Alice doesn't just sign agreements and hope for the best, she has ongoing visibility into how her data is being used across all her relationships.
 

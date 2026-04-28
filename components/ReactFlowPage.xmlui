@@ -18,7 +18,7 @@ The base level 'service delivery relationship' agreement is a very important pie
     </Markdown>
   </ModalDialog>
 
-  <ModalDialog id="pdcAiInfo" title="SD-BY-A">
+  <ModalDialog id="pdcAiInfo" title="SD-BY-DP">
     <Markdown>
       <![CDATA[
 An agreement that indicates you are willing to provide access to specific data under your control for the purposes of Training and Operating AI technologies.
@@ -46,11 +46,11 @@ An agreement that indicates you are willing to provide access to specific data u
       </HStack>
       <HStack verticalAlignment="center" gap="$space-1">
         <Text>
-          SD-BY-A
+          SD-BY-DP
         </Text>
         <Icon
           name="info"
-          tooltip="SD-BY-A details"
+          tooltip="SD-BY-DP details"
           width="14px"
           height="14px"
           color="$color-primary"

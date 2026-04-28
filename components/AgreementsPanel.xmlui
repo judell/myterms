@@ -16,10 +16,10 @@
     </VStack>
     <VStack gap="$space-1">
       <Text fontWeight="bold" fontSize="$fontSize-small">
-        SD-BY-A
+        SD-BY-DP
       </Text>
       <Text fontSize="$fontSize-small">
-        Extends SD-BASE with a requirement for data portability. 
+        Extends SD-BASE with a requirement for data portability.
       </Text>
     </VStack>
 
