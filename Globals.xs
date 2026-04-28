@@ -295,30 +295,8 @@ function getProcessFlowSteps() {
         { type: 'removeEdge', edgeId: 'e-ea-consult' },
       ],
       nextIf: [
-        { when: () => agreementDecision === 'yes', goto: 'verify' },
+        { when: () => agreementDecision === 'yes', goto: 'done' },
         { when: () => agreementDecision === 'no', goto: 'rejected' },
-      ],
-      onComplete: () => {
-        if (agreementDecision === 'no') {
-          alicePersonalDataStore = [...alicePersonalDataStore, makeStoreEntry(offeredTerm + ' (rejected)', "Kleindorfer's")];
-          kleindorfersOrgDataStore = [...kleindorfersOrgDataStore, makeStoreEntry(offeredTerm + ' (rejected)', 'Alice')];
-        }
-      },
-    },
-    {
-      id: 'verify',
-      title: stepLabel(6),
-      message: "Kleindorfer's agent verifies agreement",
-      actionLabel: 'Verify',
-      phase: 6,
-      runningPhase: 'verifying',
-      completeAfterRoundTrip: true,
-      run: [
-        { type: 'addEdge', id: 'e-ea-verify', source: 'entity-agent', target: 'entity', sourceHandle: 'bottom-left', targetHandle: 'top-left', label: 'verifies agreement', noArrow: false, data: { labelPosition: 30 } },
-        { type: 'pulse', edge: 'verifies agreement', durationMs: pulseDuration * 2 },
-      ],
-      cleanup: [
-        { type: 'removeEdge', edgeId: 'e-ea-verify' },
       ],
       onComplete: () => {
         const status = agreementDecision === 'yes' ? 'accepted' : 'rejected';
@@ -329,7 +307,6 @@ function getProcessFlowSteps() {
           window.__reactFlowCanvasApi.addEdge('e-signed-' + acceptedCount, 'person', 'entity-agent', 'right-magnet', 'left-magnet', 'signed: ' + offeredTerm + ' \u2282\u2283', true);
         }
       },
-      next: 'done',
     },
     {
       id: 'rejected',
@@ -341,7 +318,7 @@ function getProcessFlowSteps() {
     },
     {
       id: 'done',
-      title: stepLabel(7),
+      title: stepLabel(6),
       message: agreementDecision === 'yes' ? 'Agreement signed and posted to ledger' : 'Agreement rejected',
       actionLabel: 'Start Over',
       phase: 7,

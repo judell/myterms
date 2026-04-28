@@ -111,7 +111,7 @@ An agreement that indicates you are willing to provide access to specific data u
     interval="{pulseDuration}"
     onTick="{() => { onTimerComplete() }}" />
 
-  <!-- Round-trip completion (lookup, consult, verify steps) -->
+  <!-- Round-trip completion (lookup, consult steps) -->
   <Timer
     enabled="{running && getProcessFlowSteps()[stepIndex].completeAfterRoundTrip}"
     interval="{pulseDuration * 2}"
